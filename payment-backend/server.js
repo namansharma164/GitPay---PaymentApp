@@ -6,9 +6,11 @@ const cors = require('cors');
 require('dotenv').config();
 
 const app = express();
+app.set('trust proxy', 1);
 const corsOptions = {
   origin: 'https://git-pay-payment-app.vercel.app/' 
 };
+
 // Middleware 
 app.use(cors()); 
 app.use(express.json()); 
