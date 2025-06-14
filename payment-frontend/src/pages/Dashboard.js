@@ -4,14 +4,13 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { FaPaperPlane, FaPlusCircle, FaSignOutAlt, FaReceipt, FaBell } from 'react-icons/fa';
 
- 
 const DashboardPage = styled.div`
   min-height: 100vh;
   background: #0d0d0d;
   color: #fff;
   font-family: 'Poppins', sans-serif;
-  display: flex; /* Added for footer positioning */
-  flex-direction: column; /* Added for footer positioning */
+  display: flex;
+  flex-direction: column;
 `;
 
 const Header = styled.header`
@@ -24,6 +23,10 @@ const Header = styled.header`
   position: sticky;
   top: 0;
   z-index: 10;
+  
+  @media (max-width: 600px) {
+    padding: 15px 20px;
+  }
 `;
 
 const Logo = styled.h1`
@@ -68,6 +71,7 @@ const Badge = styled.span`
   border: 1px solid #1a1a1a;
 `;
 
+// --- FIX: This panel is now responsive for mobile screens ---
 const RequestsPanel = styled.div`
   position: absolute;
   top: 100%;
@@ -82,13 +86,23 @@ const RequestsPanel = styled.div`
   overflow-y: auto;
   z-index: 1000;
   color: #fff;
-  
+
   h4 {
     margin-top: 0;
     margin-bottom: 15px;
     padding-bottom: 10px;
     border-bottom: 1px solid #333;
     color: #32cd32;
+  }
+
+  @media (max-width: 600px) {
+    position: fixed; /* Changed to fixed for viewport relativity */
+    top: 65px; /* Adjust based on your header's height */
+    right: 5vw; /* Position from the right edge of the screen */
+    left: 5vw; /* Position from the left edge of the screen */
+    width: 90vw; /* Use viewport width */
+    max-height: 70vh;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.7);
   }
 `;
 
@@ -157,8 +171,11 @@ const DeclineButton = styled(ActionButton)`
 `;
 
 const MainContent = styled.main`
+  flex-grow: 1;
   padding: 40px;
-  flex-grow: 1; /* Added for footer positioning */
+  @media (max-width: 600px) {
+    padding: 20px;
+  }
 `;
 
 const MessageContainer = styled.div`
@@ -167,6 +184,7 @@ const MessageContainer = styled.div`
   align-items: center;
   height: 50vh;
   font-size: 1.5rem;
+  text-align: center;
 `;
 
 const WelcomeHeader = styled.h2`
@@ -185,18 +203,8 @@ const DashboardMessage = styled.div`
   border-radius: 10px;
   margin-bottom: 40px;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-
-  h3 {
-    margin-top: 0;
-    color: #fff;
-    font-weight: 600;
-  }
-
-  p {
-    margin-bottom: 0;
-    color: #ccc;
-    line-height: 1.6;
-  }
+  h3 { margin-top: 0; color: #fff; font-weight: 600; }
+  p { margin-bottom: 0; color: #ccc; line-height: 1.6; }
 `;
 
 const CardsContainer = styled.div`
@@ -215,18 +223,8 @@ const Card = styled.div`
 `;
 
 const BalanceCard = styled(Card)`
-  h3 {
-    font-size: 1rem;
-    color: #ccc;
-    margin: 0 0 10px 0;
-    text-transform: uppercase;
-  }
-  p {
-    font-size: 2.5rem;
-    font-weight: bold;
-    color: #fff;
-    margin: 0;
-  }
+  h3 { font-size: 1rem; color: #ccc; margin: 0 0 10px 0; text-transform: uppercase; }
+  p { font-size: clamp(1.7rem, 7vw, 2.3rem); font-weight: bold; color: #fff; margin: 0; word-break: break-all; }
 `;
 
 const ActionCard = styled(Card)`
@@ -237,18 +235,8 @@ const ActionCard = styled(Card)`
   cursor: pointer;
   transition: transform 0.2s ease, background 0.2s ease;
   border-left: 4px solid #444;
-
-  &:hover {
-    transform: translateY(-5px);
-    background: #222;
-    border-left-color: #32cd32;
-  }
-
-  p {
-    margin-top: 15px;
-    font-size: 1.1rem;
-    font-weight: 600;
-  }
+  &:hover { transform: translateY(-5px); background: #222; border-left-color: #32cd32; }
+  p { margin-top: 15px; font-size: 1.1rem; font-weight: 600; }
 `;
 
 const ActionIcon = styled.div`
@@ -260,13 +248,7 @@ const TransactionsSection = styled.section`
   background: #1a1a1a;
   padding: 25px;
   border-radius: 10px;
-  
-  h3 {
-    font-size: 1.5rem;
-    margin: 0 0 20px 0;
-    border-bottom: 1px solid #333;
-    padding-bottom: 15px;
-  }
+  h3 { font-size: 1.5rem; margin: 0 0 20px 0; border-bottom: 1px solid #333; padding-bottom: 15px; }
 `;
 
 const TransactionList = styled.ul`
@@ -281,38 +263,27 @@ const TransactionItem = styled.li`
   align-items: center;
   padding: 15px 5px;
   border-bottom: 1px solid #2a2a2a;
-
-  &:last-child {
-    border-bottom: none;
-  }
+  &:last-child { border-bottom: none; }
 `;
 
 const TransactionDetails = styled.div`
-  p {
-    margin: 0;
-    font-weight: 500;
-  }
-  span {
-    font-size: 0.85rem;
-    color: #aaa;
-  }
+  p { margin: 0; font-weight: 500; }
+  span { font-size: 0.85rem; color: #aaa; }
 `;
 
 const TransactionAmount = styled.p`
   font-size: 1.1rem;
   font-weight: bold;
-  color: ${props => (props.type === 'credit' ? '#39d353' : '#ff4d4d')};
+  color: ${props => (props.type === 'credit' ? '#ff4d4d' : '#39d353')};
 `;
 
 const Footer = styled.footer`
   text-align: center;
   padding: 20px 40px;
-  font-size: 1.3rem;
   color: #555;
   border-top: 1px solid #222;
-  margin-top: auto; /* Pushes footer to the bottom */
+  margin-top: auto;
 `;
-
 
 export default function Dashboard({ setToken }) {
   const [userData, setUserData] = useState(null);
@@ -343,7 +314,7 @@ export default function Dashboard({ setToken }) {
         axios.get(`${process.env.REACT_APP_API_URL}/api/transactions/pending`, config)
       ]);
       setUserData(userRes.data);
-      setTransactions(transactionsRes.data.filter(tx => tx.status !== 'pending'));
+      setTransactions(transactionsRes.data.filter(tx => tx.status !== 'pending')); 
       setPendingRequests(pendingRes.data);
     } catch (err) {
       console.error('Dashboard fetch error:', err);
@@ -379,6 +350,7 @@ export default function Dashboard({ setToken }) {
   };
   
   const formatCurrency = (amount) => {
+    if (typeof amount !== 'number') return '$0.00';
     return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
   }
 
@@ -390,11 +362,8 @@ export default function Dashboard({ setToken }) {
       <Header>
         <Logo onClick={() => navigate('/dashboard')}>GitPAY</Logo>
         <HeaderActions>
-          <NotificationContainer
-            onMouseEnter={() => setShowRequestsPanel(true)}
-            onMouseLeave={() => setShowRequestsPanel(false)}
-          >
-            <NotificationBell>
+          <NotificationContainer>
+            <NotificationBell onClick={() => setShowRequestsPanel(prev => !prev)}>
               <FaBell />
               {pendingRequests.length > 0 && <Badge>{pendingRequests.length}</Badge>}
             </NotificationBell>
@@ -421,18 +390,19 @@ export default function Dashboard({ setToken }) {
           </LogoutButton>
         </HeaderActions>
       </Header>
+      
       <MainContent>
         <WelcomeHeader>Welcome back, <span>{userData?.firstName}</span>!</WelcomeHeader>
         
         <DashboardMessage>
             <h3>Your Financial Command Center</h3>
-            <p>This is your central hub for managing funds, viewing recent activity, and handling payment requests. We're glad to have you!</p>
+            <p>This is your central hub for managing funds, viewing recent activity, and handling payment requests.</p>
         </DashboardMessage>
 
         <CardsContainer>
           <BalanceCard>
             <h3>Current Balance</h3>
-            <p>{formatCurrency(userData?.balance || 0)}</p>
+            <p>{formatCurrency(userData?.balance)}</p>
           </BalanceCard>
           <ActionCard onClick={() => navigate('/send-money')}>
             <ActionIcon><FaPaperPlane /></ActionIcon>
@@ -443,18 +413,20 @@ export default function Dashboard({ setToken }) {
             <p>Add Funds</p>
           </ActionCard>
         </CardsContainer>
+        
         <TransactionsSection>
           <h3><FaReceipt style={{ marginRight: '10px' }} />Recent Activity</h3>
           {transactions.length > 0 ? (
             <TransactionList>
               {transactions.map(tx => (
-                <TransactionItem key={tx._id}>
+                <TransactionItem key={tx.id}>
                   <TransactionDetails>
                     <p>{tx.description}</p>
                     <span>{new Date(tx.date).toLocaleString()}</span>
                   </TransactionDetails>
-                  <TransactionAmount type={tx.amount > 0 ? 'credit' : 'debit'}>
-                    {tx.amount > 0 ? '+' : '-'}{formatCurrency(Math.abs(tx.amount))}
+                  {/* --- Reverted to your original UI logic --- */}
+                  <TransactionAmount type={tx.type}>
+                    {tx.amount > 0 ? '+' : ''}{formatCurrency(tx.amount)}
                   </TransactionAmount>
                 </TransactionItem>
               ))}
@@ -465,7 +437,6 @@ export default function Dashboard({ setToken }) {
         </TransactionsSection>
       </MainContent>
 
-      
       <Footer>
         Made by Naman Sharma
       </Footer>

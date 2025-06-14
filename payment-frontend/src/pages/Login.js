@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import { useNavigate, Link } from 'react-router-dom';
-import axios from 'axios'; 
+import axios from 'axios';
+
+// STYLED COMPONENTS
 
 const PageContainer = styled.div`
   display: flex;
@@ -13,6 +15,8 @@ const PageContainer = styled.div`
   color: #fff;
   font-family: 'Poppins', sans-serif;
   padding: 20px;
+  box-sizing: border-box;
+  overflow-x: hidden;
 `;
 
 const FormContainer = styled.form`
@@ -23,13 +27,42 @@ const FormContainer = styled.form`
   width: 100%;
   max-width: 400px;
   border-top: 2px solid #32cd32;
+  box-sizing: border-box;
+  position: relative; 
+
+  @media (max-width: 480px) {
+    padding: 30px 25px;
+  }
+`;
+
+const BackButton = styled(Link)`
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  background: none;
+  border: none;
+  padding: 5px;
+  cursor: pointer;
+  color: #aaa; 
+  transition: color 0.3s ease;
+
+  &:hover {
+    color: #32cd32; 
+  }
+
+  svg {
+    width: 24px;
+    height: 24px;
+    stroke: currentColor; 
+    stroke-width: 2;
+  }
 `;
 
 const Title = styled.h2`
   color: #32cd32;
   text-align: center;
   margin-bottom: 30px;
-  font-size: 2rem;
+  font-size: clamp(1.8rem, 6vw, 2.2rem);
 `;
 
 const InputGroup = styled.div`
@@ -40,7 +73,7 @@ const Label = styled.label`
   display: block;
   margin-bottom: 8px;
   color: #ccc;
-  font-size: 0.9rem;
+  font-size: clamp(0.85rem, 3vw, 0.9rem);
 `;
 
 const Input = styled.input`
@@ -50,7 +83,7 @@ const Input = styled.input`
   border-radius: 5px;
   background: #222;
   color: #fff;
-  font-size: 1rem;
+  font-size: clamp(0.9rem, 4vw, 1rem);
   box-sizing: border-box;
 
   &:focus {
@@ -63,7 +96,7 @@ const Input = styled.input`
 const GreenButton = styled.button`
   width: 100%;
   padding: 12px;
-  font-size: 1rem;
+  font-size: clamp(0.9rem, 4vw, 1rem);
   font-weight: bold;
   color: #fff;
   background-color: #32cd32;
@@ -104,7 +137,8 @@ const Subtext = styled.p`
   }
 `;
 
-// --- The Main Login Component ---
+
+//  The Main Login Component 
 export default function Login({ setToken }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -113,7 +147,7 @@ export default function Login({ setToken }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError(''); // Clear previous errors
+    setError('');
 
     if (!email || !password) {
       setError('Please fill in all fields.');
@@ -126,8 +160,8 @@ export default function Login({ setToken }) {
         password,
       });
       setToken(res.data.token);
-      localStorage.setItem('token', res.data.token); // Persist token
-      navigate('/dashboard'); // Redirect to dashboard on successful login
+      localStorage.setItem('token', res.data.token);
+      navigate('/dashboard');
     } catch (err) {
       if (err.response && err.response.data && err.response.data.error) {
         setError(err.response.data.error);
@@ -141,6 +175,14 @@ export default function Login({ setToken }) {
   return (
     <PageContainer>
       <FormContainer onSubmit={handleSubmit}>
+        {/* --- ADDED: The back button is placed here --- */}
+        <BackButton to="/">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+          </svg>
+        </BackButton>
+
         <Title>Welcome Back</Title>
         <InputGroup>
           <Label htmlFor="email">Email Address</Label>

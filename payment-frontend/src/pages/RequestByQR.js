@@ -5,6 +5,7 @@ import axios from 'axios';
 import { QRCodeCanvas } from 'qrcode.react';
 import { FaArrowLeft, FaDownload } from 'react-icons/fa';
 
+// Component Styles
 const PageContainer = styled.div`
   display: flex;
   flex-direction: column;
@@ -30,36 +31,15 @@ const FormContainer = styled.div`
 const Title = styled.h2`
   color: #32cd32;
   text-align: center;
-  margin-bottom: 30px;
+  margin-bottom: 20px;
   font-size: 2rem;
 `;
 
-const InputGroup = styled.div`
-  margin-bottom: 20px;
-`;
-
-const Label = styled.label`
-  display: block;
-  margin-bottom: 8px;
+const Description = styled.p`
+  text-align: center;
   color: #ccc;
-  font-size: 0.9rem;
-`;
-
-const Input = styled.input`
-  width: 100%;
-  padding: 12px;
-  border: 1px solid #444;
-  border-radius: 5px;
-  background: #222;
-  color: #fff;
-  font-size: 1rem;
-  box-sizing: border-box;
-
-  &:focus {
-    outline: none;
-    border-color: #32cd32;
-    box-shadow: 0 0 10px #32cd3250;
-  }
+  line-height: 1.6;
+  margin-bottom: 30px;
 `;
 
 const BackLink = styled.div`
@@ -80,7 +60,6 @@ const QRContainer = styled.div`
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  margin-top: 25px;
   padding: 20px;
   background: #222;
   border-radius: 10px;
@@ -107,8 +86,8 @@ const DownloadButton = styled.button`
   }
 `;
 
+// Main Component
 export default function RequestByQR() {
-  const [amount, setAmount] = useState('');
   const [currentUserEmail, setCurrentUserEmail] = useState('');
   const [qrValue, setQrValue] = useState('');
   const [loading, setLoading] = useState(true);
@@ -116,6 +95,7 @@ export default function RequestByQR() {
 
   useEffect(() => {
     const fetchUserEmail = async () => {
+      setLoading(true);
       try {
         const token = localStorage.getItem('token');
         const config = { headers: { Authorization: `Bearer ${token}` } };
@@ -130,25 +110,24 @@ export default function RequestByQR() {
     fetchUserEmail();
   }, []);
 
+  
   useEffect(() => {
-    if (amount > 0 && currentUserEmail) {
-      const requestData = {
-        recipientEmail: currentUserEmail,
-        amount: Number(amount)
+    if (currentUserEmail) {
+      const payload = {
+        email: currentUserEmail,
       };
-      setQrValue(JSON.stringify(requestData));
-    } else {
-      setQrValue('');
+      setQrValue(JSON.stringify(payload));
     }
-  }, [amount, currentUserEmail]);
+  }, [currentUserEmail]);
 
+  // Handle QR Code Download
   const handleDownload = () => {
     const canvas = document.getElementById('request-qr-code');
     if (canvas) {
       const pngUrl = canvas.toDataURL('image/png').replace('image/png', 'image/octet-stream');
       let downloadLink = document.createElement('a');
       downloadLink.href = pngUrl;
-      downloadLink.download = `payapp-request-${amount}.png`;
+      downloadLink.download = `gitpay-my-qr-code.png`;
       document.body.appendChild(downloadLink);
       downloadLink.click();
       document.body.removeChild(downloadLink);
@@ -160,30 +139,21 @@ export default function RequestByQR() {
   return (
     <PageContainer>
       <FormContainer>
-        <BackLink onClick={() => navigate('/add-funds')}>
+        <BackLink onClick={() => navigate('/dashboard')}>
           <FaArrowLeft style={{ marginRight: '8px' }} />
-          Back to Add Funds
+          Back to Dashboard
         </BackLink>
-        <Title>Generate QR Code</Title>
-        <InputGroup>
-          <Label htmlFor="amount">Amount to Request (USD)</Label>
-          <Input
-            type="number"
-            id="amount"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-            placeholder="0.00"
-            required
-            min="0.01"
-            step="0.01"
-          />
-        </InputGroup>
-        {qrValue && (
+        <Title>My QR Code</Title>
+        <Description>
+          Let others scan this code to send you money. They will be prompted to enter the amount.
+        </Description>
+        
+        {qrValue ? (
           <QRContainer>
             <QRCodeCanvas
               id="request-qr-code"
               value={qrValue}
-              size={200}
+              size={256}
               level={'H'}
               includeMargin={true}
               bgColor="#ffffff"
@@ -193,6 +163,8 @@ export default function RequestByQR() {
               <FaDownload /> Download QR
             </DownloadButton>
           </QRContainer>
+        ) : (
+          <Description>Generating your personal QR code...</Description>
         )}
       </FormContainer>
     </PageContainer>
