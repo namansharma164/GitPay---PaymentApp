@@ -4,6 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { FaPaperPlane, FaPlusCircle, FaSignOutAlt, FaReceipt, FaBell } from 'react-icons/fa';
 
+// ... (All other styled-components remain exactly the same) ...
+
 const DashboardPage = styled.div`
   min-height: 100vh;
   background: #0d0d0d;
@@ -71,7 +73,6 @@ const Badge = styled.span`
   border: 1px solid #1a1a1a;
 `;
 
-// --- FIX: This panel is now responsive for mobile screens ---
 const RequestsPanel = styled.div`
   position: absolute;
   top: 100%;
@@ -96,11 +97,11 @@ const RequestsPanel = styled.div`
   }
 
   @media (max-width: 600px) {
-    position: fixed; /* Changed to fixed for viewport relativity */
-    top: 65px; /* Adjust based on your header's height */
-    right: 5vw; /* Position from the right edge of the screen */
-    left: 5vw; /* Position from the left edge of the screen */
-    width: 90vw; /* Use viewport width */
+    position: fixed;
+    top: 65px;
+    right: 5vw;
+    left: 5vw;
+    width: 90vw;
     max-height: 70vh;
     box-shadow: 0 10px 30px rgba(0,0,0,0.7);
   }
@@ -271,10 +272,11 @@ const TransactionDetails = styled.div`
   span { font-size: 0.85rem; color: #aaa; }
 `;
 
+// --- FIX #1: The component's color now depends on the sign of the amount ---
 const TransactionAmount = styled.p`
   font-size: 1.1rem;
   font-weight: bold;
-  color: ${props => (props.type === 'credit' ? '#ff4d4d' : '#39d353')};
+  color: ${props => (props.amount < 0 ? '#ff4d4d' : '#39d353')};
 `;
 
 const Footer = styled.footer`
@@ -424,10 +426,10 @@ export default function Dashboard({ setToken }) {
                     <p>{tx.description}</p>
                     <span>{new Date(tx.date).toLocaleString()}</span>
                   </TransactionDetails>
-                  {/* --- Reverted to your original UI logic --- */}
-                  <TransactionAmount type={tx.type}>
-  {tx.type === 'credit' ? '-' : '+'}{formatCurrency(Math.abs(tx.amount))}
-</TransactionAmount>
+                  {/* --- FIX #2: The amount and sign are now derived directly from the amount's value --- */}
+                  <TransactionAmount amount={tx.amount}>
+                    {tx.amount > 0 ? '+' : ''}{formatCurrency(tx.amount)}
+                  </TransactionAmount>
                 </TransactionItem>
               ))}
             </TransactionList>
