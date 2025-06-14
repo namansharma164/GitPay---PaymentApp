@@ -4,34 +4,26 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { FaPaperPlane, FaPlusCircle, FaSignOutAlt, FaReceipt, FaBell } from 'react-icons/fa';
 
-import { breakpoints } from '../styles/breakpoints'; 
-
-
-
+ 
 const DashboardPage = styled.div`
   min-height: 100vh;
   background: #0d0d0d;
   color: #fff;
   font-family: 'Poppins', sans-serif;
-  display: flex;
-  flex-direction: column;
+  display: flex; /* Added for footer positioning */
+  flex-direction: column; /* Added for footer positioning */
 `;
 
 const Header = styled.header`
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding: 20px 40px;
   background: #1a1a1a;
   border-bottom: 1px solid #333;
   position: sticky;
   top: 0;
   z-index: 10;
-  
-  // --- RESPONSIVE FIX ---
-  padding: 15px 20px;
-  @media (min-width: ${breakpoints.md}) {
-    padding: 20px 40px;
-  }
 `;
 
 const Logo = styled.h1`
@@ -44,12 +36,7 @@ const Logo = styled.h1`
 const HeaderActions = styled.div`
   display: flex;
   align-items: center;
-  
-  // --- RESPONSIVE FIX ---
-  gap: 15px;
-  @media (min-width: ${breakpoints.md}) {
-    gap: 30px;
-  }
+  gap: 30px;
 `;
 
 const NotificationContainer = styled.div`
@@ -85,7 +72,7 @@ const RequestsPanel = styled.div`
   position: absolute;
   top: 100%;
   right: 0;
-  width: 300px; /* Reduced width for better mobile fit */
+  width: 350px;
   max-height: 400px;
   background: #1a1a1a;
   border-radius: 10px;
@@ -102,10 +89,6 @@ const RequestsPanel = styled.div`
     padding-bottom: 10px;
     border-bottom: 1px solid #333;
     color: #32cd32;
-  }
-
-  @media (min-width: ${breakpoints.md}) {
-    width: 350px;
   }
 `;
 
@@ -174,13 +157,8 @@ const DeclineButton = styled(ActionButton)`
 `;
 
 const MainContent = styled.main`
-  flex-grow: 1; /* Ensures this section fills space, pushing footer down */
-  
-  // --- RESPONSIVE FIX ---
-  padding: 20px;
-  @media (min-width: ${breakpoints.md}) {
-    padding: 40px;
-  }
+  padding: 40px;
+  flex-grow: 1; /* Added for footer positioning */
 `;
 
 const MessageContainer = styled.div`
@@ -189,19 +167,12 @@ const MessageContainer = styled.div`
   align-items: center;
   height: 50vh;
   font-size: 1.5rem;
-  text-align: center;
 `;
 
 const WelcomeHeader = styled.h2`
+  font-size: 2.2rem;
   font-weight: 600;
   margin-bottom: 20px;
-  
-  // --- RESPONSIVE FIX ---
-  font-size: 1.8rem;
-  @media (min-width: ${breakpoints.md}) {
-    font-size: 2.2rem;
-  }
-  
   span {
     color: #32cd32;
   }
@@ -231,13 +202,8 @@ const DashboardMessage = styled.div`
 const CardsContainer = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 30px;
   margin-bottom: 40px;
-  
-  // --- RESPONSIVE FIX ---
-  gap: 20px;
-  @media (min-width: ${breakpoints.md}) {
-    gap: 30px;
-  }
 `;
 
 const Card = styled.div`
@@ -256,15 +222,10 @@ const BalanceCard = styled(Card)`
     text-transform: uppercase;
   }
   p {
+    font-size: 2.5rem;
     font-weight: bold;
     color: #fff;
     margin: 0;
-    word-break: break-all; /* Prevents overflow if balance is huge */
-
-    // --- RESPONSIVE FIX ---
-    // This makes the font size fluidly scale with the viewport width
-    // It will be at least 2.5rem, at most 4rem, and ideally 8vw.
-    font-size: clamp(1.7rem, 7vw, 2.3rem);
   }
 `;
 
@@ -320,15 +281,6 @@ const TransactionItem = styled.li`
   align-items: center;
   padding: 15px 5px;
   border-bottom: 1px solid #2a2a2a;
-  
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 10px;
-
-  @media (min-width: ${breakpoints.sm}) {
-    flex-direction: row;
-    align-items: center;
-  }
 
   &:last-child {
     border-bottom: none;
@@ -350,30 +302,17 @@ const TransactionAmount = styled.p`
   font-size: 1.1rem;
   font-weight: bold;
   color: ${props => (props.type === 'credit' ? '#39d353' : '#ff4d4d')};
-  
-  width: 100%;
-  text-align: right;
-  
-  @media (min-width: ${breakpoints.sm}) {
-    width: auto; // Let flexbox control the width on larger screens
-  }
 `;
 
 const Footer = styled.footer`
   text-align: center;
   padding: 20px 40px;
+  font-size: 1.3rem;
   color: #555;
   border-top: 1px solid #222;
-  margin-top: auto; /* This is key for the sticky footer */
-  
-  font-size: 1rem;
-  @media (min-width: ${breakpoints.md}) {
-    font-size: 1.3rem;
-  }
+  margin-top: auto; /* Pushes footer to the bottom */
 `;
 
-
-// REACT COMPONENT 
 
 export default function Dashboard({ setToken }) {
   const [userData, setUserData] = useState(null);
@@ -404,8 +343,7 @@ export default function Dashboard({ setToken }) {
         axios.get(`${process.env.REACT_APP_API_URL}/api/transactions/pending`, config)
       ]);
       setUserData(userRes.data);
-      // Filter out pending from recent, as they are handled separately
-      setTransactions(transactionsRes.data.filter(tx => tx.status !== 'pending')); 
+      setTransactions(transactionsRes.data.filter(tx => tx.status !== 'pending'));
       setPendingRequests(pendingRes.data);
     } catch (err) {
       console.error('Dashboard fetch error:', err);
@@ -432,8 +370,7 @@ export default function Dashboard({ setToken }) {
     try {
       const config = { headers: { Authorization: `Bearer ${token}` } };
       await axios.post(`${process.env.REACT_APP_API_URL}/api/transactions/request/${requestId}/${action}`, {}, config);
-      // Optimistically update UI then refetch for consistency
-      setPendingRequests(prev => prev.filter(req => req.id !== requestId));
+      setPendingRequests(prev => prev.filter(req => req._id !== requestId));
       fetchData();
     } catch (err) {
       alert(`Failed to ${action} request. Please try again.`);
@@ -442,10 +379,6 @@ export default function Dashboard({ setToken }) {
   };
   
   const formatCurrency = (amount) => {
-    // Return a default or loading state if amount is not a number
-    if (typeof amount !== 'number') {
-        return '$0.00';
-    }
     return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
   }
 
@@ -469,13 +402,13 @@ export default function Dashboard({ setToken }) {
               <RequestsPanel>
                 <h4>Pending Money Requests</h4>
                 {pendingRequests.map(req => (
-                  <RequestItem key={req.id}>
+                  <RequestItem key={req._id}>
                     <RequestInfo>
                       <span>{req.to.firstName} {req.to.lastName}</span> is requesting <span>{formatCurrency(req.amount)}</span>.
                     </RequestInfo>
                     <ActionButtons>
-                      <ApproveButton onClick={() => handleRequestAction(req.id, 'approve')}>Approve</ApproveButton>
-                      <DeclineButton onClick={() => handleRequestAction(req.id, 'decline')}>Decline</DeclineButton>
+                      <ApproveButton onClick={() => handleRequestAction(req._id, 'approve')}>Approve</ApproveButton>
+                      <DeclineButton onClick={() => handleRequestAction(req._id, 'decline')}>Decline</DeclineButton>
                     </ActionButtons>
                   </RequestItem>
                 ))}
@@ -488,19 +421,18 @@ export default function Dashboard({ setToken }) {
           </LogoutButton>
         </HeaderActions>
       </Header>
-      
       <MainContent>
         <WelcomeHeader>Welcome back, <span>{userData?.firstName}</span>!</WelcomeHeader>
         
         <DashboardMessage>
             <h3>Your Financial Command Center</h3>
-            <p>This is your central hub for managing funds, viewing recent activity, and handling payment requests.</p>
+            <p>This is your central hub for managing funds, viewing recent activity, and handling payment requests. We're glad to have you!</p>
         </DashboardMessage>
 
         <CardsContainer>
           <BalanceCard>
             <h3>Current Balance</h3>
-            <p>{formatCurrency(userData?.balance)}</p>
+            <p>{formatCurrency(userData?.balance || 0)}</p>
           </BalanceCard>
           <ActionCard onClick={() => navigate('/send-money')}>
             <ActionIcon><FaPaperPlane /></ActionIcon>
@@ -511,20 +443,18 @@ export default function Dashboard({ setToken }) {
             <p>Add Funds</p>
           </ActionCard>
         </CardsContainer>
-        
         <TransactionsSection>
           <h3><FaReceipt style={{ marginRight: '10px' }} />Recent Activity</h3>
           {transactions.length > 0 ? (
             <TransactionList>
               {transactions.map(tx => (
-                <TransactionItem key={tx.id}>
+                <TransactionItem key={tx._id}>
                   <TransactionDetails>
                     <p>{tx.description}</p>
                     <span>{new Date(tx.date).toLocaleString()}</span>
                   </TransactionDetails>
                   <TransactionAmount type={tx.amount > 0 ? 'credit' : 'debit'}>
-                    {/* Using a formatter that handles negative numbers simplifies this */}
-                    {tx.amount > 0 ? '+' : ''}{formatCurrency(tx.amount)}
+                    {tx.amount > 0 ? '+' : '-'}{formatCurrency(Math.abs(tx.amount))}
                   </TransactionAmount>
                 </TransactionItem>
               ))}
@@ -535,6 +465,7 @@ export default function Dashboard({ setToken }) {
         </TransactionsSection>
       </MainContent>
 
+      
       <Footer>
         Made by Naman Sharma
       </Footer>

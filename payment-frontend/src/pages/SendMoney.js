@@ -1,58 +1,39 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { Html5QrcodeScanner } from 'html5-qrcode';
+import axios from 'axios';
+import { useQrScanner } from '../hooks/useQrScanner'; 
+import { FaArrowLeft, FaQrcode } from 'react-icons/fa';
 
-// Component Styles
+
+
 const PageContainer = styled.div`
   display: flex;
-  justify-content: center;
+  flex-direction: column;
   align-items: center;
+  justify-content: center;
   min-height: 100vh;
   background: #0d0d0d;
-  padding: 20px;
+  color: #fff;
   font-family: 'Poppins', sans-serif;
+  padding: 20px;
 `;
 
-const BackButton = styled.button`
-  position: absolute;
-  top: 20px;
-  left: 20px;
-  background: none;
-  border: 1px solid #444;
-  color: #ccc;
-  padding: 8px 12px;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 0.9rem;
-  font-weight: bold;
-  transition: all 0.3s ease;
-  z-index: 10;
-
-  &:hover {
-    background: #222;
-    border-color: #32cd32;
-    color: #32cd32;
-  }
-`;
-
-const SendMoneyContainer = styled.div`
-  position: relative;
+const FormContainer = styled.form`
   background: #1a1a1a;
   padding: 40px;
   border-radius: 10px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 5px 25px rgba(0, 0, 0, 0.3);
   width: 100%;
-  max-width: 500px;
-  color: #fff;
-  border-left: 4px solid #32cd32;
+  max-width: 400px;
+  border-top: 2px solid #32cd32;
 `;
 
-const Title = styled.h1`
-  text-align: center;
+const Title = styled.h2`
   color: #32cd32;
+  text-align: center;
   margin-bottom: 30px;
+  font-size: 2rem;
 `;
 
 const InputGroup = styled.div`
@@ -63,260 +44,250 @@ const Label = styled.label`
   display: block;
   margin-bottom: 8px;
   color: #ccc;
-  font-weight: 500;
+  font-size: 0.9rem;
 `;
 
 const Input = styled.input`
   width: 100%;
   padding: 12px;
-  background: #2a2a2a;
   border: 1px solid #444;
   border-radius: 5px;
+  background: #222;
   color: #fff;
   font-size: 1rem;
-  transition: border-color 0.3s;
+  box-sizing: border-box;
 
   &:focus {
     outline: none;
     border-color: #32cd32;
+    box-shadow: 0 0 10px #32cd3250;
   }
 `;
 
-const Button = styled.button`
+const GreenButton = styled.button`
   width: 100%;
-  padding: 15px;
-  background: #32cd32;
+  padding: 12px;
+  font-size: 1rem;
+  font-weight: bold;
+  color: #fff;
+  background-color: #32cd32;
   border: none;
   border-radius: 5px;
-  color: #1a1a1a;
-  font-size: 1.1rem;
-  font-weight: bold;
   cursor: pointer;
-  transition: background-color 0.3s;
+  box-shadow: 0 0 15px #32cd3270;
+  transition: all 0.3s ease;
+  margin-top: 10px;
 
-  &:hover {
-    background: #28a745;
-  }
-  
   &:disabled {
-    background: #555;
+    background-color: #555;
     cursor: not-allowed;
+    box-shadow: none;
   }
 `;
 
-const QRButton = styled(Button)`
-  background: transparent;
-  border: 1px solid #32cd32;
-  color: #32cd32;
+const Message = styled.p`
+  text-align: center;
+  font-size: 0.9rem;
   margin-top: 15px;
+  color: ${props => (props.type === 'error' ? '#ff4d4d' : '#39d353')};
+`;
+
+const BackLink = styled.div`
+  display: flex;
+  align-items: center;
+  color: #aaa;
+  cursor: pointer;
+  margin-bottom: 30px;
+  font-size: 0.9rem;
+  
+  &:hover {
+    color: #32cd32;
+  }
+`;
+
+const ScanButton = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 20px;
+  background: #222;
+  color: #ccc;
+  border: 1px dashed #444;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: all 0.2s ease;
 
   &:hover {
-    background: rgba(50, 205, 50, 0.1);
+    background: #333;
+    color: #32cd32;
+    border-color: #32cd32;
   }
-`;
-
-const ErrorMessage = styled.p`
-  color: #ff4d4d;
-  text-align: center;
-  margin-top: 15px;
-`;
-
-const SuccessMessage = styled.p`
-  color: #39d353;
-  text-align: center;
-  margin-top: 15px;
 `;
 
 const ScannerOverlay = styled.div`
   position: fixed;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.9);
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.8);
   display: flex;
   flex-direction: column;
-  justify-content: center;
   align-items: center;
-  z-index: 1000;
+  justify-content: center;
+  z-index: 2000;
 `;
 
 const ScannerContainer = styled.div`
   width: 90%;
-  max-width: 500px;
-  background: #1a1a1a;
+  max-width: 400px;
   border-radius: 10px;
   overflow: hidden;
-  padding: 20px;
-`;
-
-const ScannerTitle = styled.h3`
-  color: #fff;
-  text-align: center;
-  margin-bottom: 20px;
 `;
 
 const CloseButton = styled.button`
   margin-top: 20px;
-  padding: 12px 25px;
+  padding: 10px 25px;
   background: #ff4d4d;
   color: white;
   border: none;
   border-radius: 5px;
-  font-size: 1rem;
-  font-weight: bold;
   cursor: pointer;
+  font-weight: bold;
 `;
 
-// Main Component
+
 export default function SendMoney() {
-  // Component State
-  const [recipient, setRecipient] = useState('');
+  const [toEmail, setToEmail] = useState('');
   const [amount, setAmount] = useState('');
   const [message, setMessage] = useState('');
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [messageType, setMessageType] = useState('');
+  const [loading, setLoading] = useState(false);
   const [showScanner, setShowScanner] = useState(false);
   const navigate = useNavigate();
 
-  // QR Scanner Logic
-  useEffect(() => {
-    if (!showScanner) return;
-
-    let scanner;
-
-    const onScanSuccess = (decodedText) => {
-      try {
-        const data = JSON.parse(decodedText);
-        const mail = data.email;
-        const scannedAmount = data.amount;
-
-        if (mail) {
-          setRecipient(mail);
-          setAmount(scannedAmount || '');
-          setSuccess(`Recipient ${mail} found! Ready to send.`);
-          setError('');
-        } else {
-          setError(`Invalid QR Format. Data: ${JSON.stringify(data)}`);
-        }
-      } catch (e) {
-        setError(`Invalid QR. Found plain text: "${decodedText}"`);
-      } finally {
-        setShowScanner(false);
-      }
-    };
-
-    const onScanFailure = (err) => {};
-
-    const startScanner = () => {
-      const config = { fps: 10, qrbox: { width: 250, height: 250 } };
-      scanner = new Html5QrcodeScanner('qr-reader', config, false);
-      scanner.render(onScanSuccess, onScanFailure);
-    };
-
-    startScanner();
-
-    return () => {
-      if (scanner) {
-        scanner.clear().catch(err => {
-          console.error("Scanner cleanup failed.", err);
-        });
-      }
-    };
-  }, [showScanner]);
-
-  // Form Submission
-  const handleSend = async (e) => {
-    e.preventDefault();
-    if (!recipient || !amount || parseFloat(amount) <= 0) {
-      setError('Please enter a valid recipient and amount.');
-      return;
-    }
-    setError('');
-    setSuccess('');
+  const handleScanSuccess = (decodedText) => {
+    stopScan();
+    setShowScanner(false);
     try {
-      const token = localStorage.getItem('token');
-      const config = { headers: { Authorization: `Bearer ${token}` } };
-      const response = await axios.post(
-        `${process.env.REACT_APP_API_URL}/api/transactions/send`,
-        {
-          toEmail: recipient, // This now matches your backend
-          amount,
-          message
-        },
-        config
-      );
-      setSuccess(response.data.message);
-      setRecipient('');
-      setAmount('');
-      setMessage('');
-      setTimeout(() => navigate('/dashboard'), 2000);
-    } catch (err) {
-      setError(err.response?.data?.error || 'An error occurred while sending money.');
+      const qrData = JSON.parse(decodedText);
+      if (qrData.recipientEmail && qrData.amount) {
+        setToEmail(qrData.recipientEmail);
+        setAmount(String(qrData.amount));
+        setMessageType('success');
+        setMessage('QR code scanned! Details filled in.');
+      } else {
+        handleScanError('Invalid QR code format.');
+      }
+    } catch (error) {
+      handleScanError('Could not read QR code. Please use one generated by our app.');
     }
   };
 
-  // Component Rendering
+  const handleScanError = (errorMessage) => {
+    if (showScanner) {
+      stopScan();
+      setShowScanner(false);
+      setMessageType('error');
+      setMessage(errorMessage);
+    }
+  };
+
+  const { startScan, stopScan } = useQrScanner(handleScanSuccess, handleScanError);
+  
+  useEffect(() => {
+    if (showScanner) {
+      startScan('qr-reader');
+    }
+  }, [showScanner, startScan]);
+
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setMessage('');
+
+    try {
+      const token = localStorage.getItem('token');
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+      
+      const response = await axios.post(
+        `${process.env.REACT_APP_API_URL}/api/transactions/send`, 
+        { toEmail, amount: Number(amount) }, 
+        config
+      );
+
+      setMessageType('success');
+      setMessage(response.data.message);
+      setToEmail('');
+      setAmount('');
+    } catch (err) {
+      setMessageType('error');
+      setMessage(err.response?.data?.error || 'Transaction failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const closeScanner = () => {
+    stopScan();
+    setShowScanner(false);
+  };
+  
   return (
     <PageContainer>
-      <SendMoneyContainer>
-        <BackButton onClick={() => navigate('/dashboard')}>
-          &larr; Back
-        </BackButton>
-
-        <Title>Send Money</Title>
-        <form onSubmit={handleSend}>
-          <InputGroup>
-            <Label>Recipient (User Email)</Label>
-            <Input
-              type="text"
-              value={recipient}
-              onChange={(e) => setRecipient(e.target.value)}
-              placeholder="user@example.com"
-              required
-            />
-          </InputGroup>
-          <InputGroup>
-            <Label>Amount ($)</Label>
-            <Input
-              type="number"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              placeholder="0.00"
-              required
-              min="0.01"
-              step="0.01"
-            />
-          </InputGroup>
-          <InputGroup>
-            <Label>Message (Optional)</Label>
-            <Input
-              type="text"
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              placeholder="e.g., For dinner last night"
-            />
-          </InputGroup>
-          <Button type="submit">Send Payment</Button>
-        </form>
-
-        <QRButton onClick={() => setShowScanner(true)}>
-          Send with QR
-        </QRButton>
-
-        {error && <ErrorMessage>{error}</ErrorMessage>}
-        {success && <SuccessMessage>{success}</SuccessMessage>}
-      </SendMoneyContainer>
-
       {showScanner && (
         <ScannerOverlay>
-          <ScannerContainer>
-            <ScannerTitle>Scan QR Code</ScannerTitle>
-            <div id="qr-reader" />
-          </ScannerContainer>
-          <CloseButton onClick={() => setShowScanner(false)}>Cancel</CloseButton>
+          <ScannerContainer id="qr-reader" />
+          <CloseButton onClick={closeScanner}>Cancel</CloseButton>
         </ScannerOverlay>
       )}
+
+      <FormContainer onSubmit={handleSubmit}>
+        <BackLink onClick={() => navigate('/dashboard')}>
+          <FaArrowLeft style={{ marginRight: '8px' }} />
+          Back to Dashboard
+        </BackLink>
+        <Title>Send Money</Title>
+
+        <ScanButton type="button" onClick={() => setShowScanner(true)}>
+          <FaQrcode />
+          Send via QR Code
+        </ScanButton>
+
+        <InputGroup>
+          <Label htmlFor="email">Recipient's Email</Label>
+          <Input
+            type="email"
+            id="email"
+            value={toEmail}
+            onChange={(e) => setToEmail(e.target.value)}
+            placeholder="or scan a QR code"
+            required
+          />
+        </InputGroup>
+        <InputGroup>
+          <Label htmlFor="amount">Amount (USD)</Label>
+          <Input
+            type="number"
+            id="amount"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            placeholder="0.00"
+            required
+            min="0.01"
+            step="0.01"
+          />
+        </InputGroup>
+        {message && <Message type={messageType}>{message}</Message>}
+        <GreenButton type="submit" disabled={loading}>
+          {loading ? 'Sending...' : 'Send Payment'}
+        </GreenButton>
+      </FormContainer>
     </PageContainer>
   );
 }

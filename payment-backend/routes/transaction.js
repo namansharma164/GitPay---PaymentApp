@@ -209,7 +209,7 @@ router.get('/recent', authMiddleware, async (req, res) => {
           id: tx._id,
           description: description,
           date: tx.timestamp.toISOString().split('T')[0],
-          amount: isSender ? -tx.amount : tx.amount,
+          amount: tx.amount,
           type: isSender ? 'debit' : 'credit',
           status: tx.status,
           otherParty: {
