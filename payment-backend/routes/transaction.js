@@ -3,7 +3,6 @@ const router = express.Router();
 const mongoose = require('mongoose');
 const User = require('../models/User');
 const Transaction = require('../models/Transaction');
-// --- FIX #1: CORRECTED THE MIDDLEWARE PATH ---
 const authMiddleware = require('../middleware/authMiddleware');
 
 router.post('/send', authMiddleware, async (req, res) => {
@@ -82,15 +81,11 @@ router.post('/request', authMiddleware, async (req, res) => {
   }
 });
 
-// --- FIX #2: ADDED A CHECK FOR A VALID TRANSACTION ID ---
 router.post('/request/:id/approve', authMiddleware, async (req, res) => {
   const { id } = req.params;
-  
-  // This check prevents the CastError by ensuring the ID is valid first.
   if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ error: 'Invalid request ID format.' });
   }
-
   const session = await mongoose.startSession();
   session.startTransaction();
   try {
@@ -173,6 +168,8 @@ router.get('/recent', authMiddleware, async (req, res) => {
           id: tx._id,
           description: description,
           date: tx.timestamp.toISOString().split('T')[0],
+          // --- THIS IS THE CORRECTED LOGIC ---
+          // If you are the sender, the amount should be negative.
           amount: isSender ? -tx.amount : tx.amount,
           type: isSender ? 'credit' : 'debit',
           status: tx.status,
