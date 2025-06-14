@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react'; // Imported useState and useEffect
 import styled, { keyframes } from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 
+// --- STYLES (Your existing styles are preserved) ---
 
 const floating = keyframes`
   0% { transform: translateY(0px); }
@@ -19,19 +20,18 @@ const HomeContainer = styled.div`
   color: #fff;
   font-family: 'Poppins', sans-serif;
   overflow: hidden;
-  padding: 20px; /* Added padding for spacing */
+  padding: 20px;
 `;
 
 const AppLogo = styled.h1`
-  font-size: 3rem; /* Made larger for impact */
+  font-size: 3rem;
   font-weight: 700;
   color: #32cd32;
-  text-shadow: 0 0 15px rgba(50, 205, 50, 0.6); /* Enhanced neon glow */
+  text-shadow: 0 0 15px rgba(50, 205, 50, 0.6);
   margin: 0;
-  margin-bottom: 40px; /* Space between logo and card */
+  margin-bottom: 40px;
   letter-spacing: 2px;
 `;
-
 
 const FloatingCard = styled.div`
   width: 350px;
@@ -45,7 +45,7 @@ const FloatingCard = styled.div`
   justify-content: space-between;
   animation: ${floating} 4s ease-in-out infinite;
   border-top: 2px solid silver;
-  border-right:2px solid silver;
+  border-right: 2px solid silver;
 `;
 
 const CardChip = styled.div`
@@ -69,12 +69,11 @@ const CardHolder = styled.p`
   text-transform: uppercase;
 `;
 
-
 const Title = styled.h2`
-  font-size: 2.5rem; /* Slightly adjusted for balance */
+  font-size: 2.5rem;
   margin-top: 40px;
   margin-bottom: 10px;
-  color: #fff; /* Changed to white for better contrast with the logo */
+  color: #fff;
   text-align: center;
 `;
 
@@ -106,9 +105,44 @@ const GreenButton = styled.button`
   }
 `;
 
+// --- NEW COMPONENT FOR YOUR NAME ---
+const FooterText = styled.p`
+  position: absolute;
+  bottom: 20px;
+  font-size: 1.3rem;
+  color: #444; /* Subtle color */
+`;
+
+
 // --- The Main Component ---
 export default function Home() {
   const navigate = useNavigate();
+
+  // --- DYNAMIC CONTENT LOGIC ---
+  const [cardDetails, setCardDetails] = useState({
+    name: 'NAMAN SHARMA',
+    number: 'XXXX XXXX XXXX 3737',
+  });
+
+  // This `useEffect` hook runs once when the component mounts
+  useEffect(() => {
+    const sampleNames = ['NAMAN SHARMA', 'JANE DOE', 'ALEX RAY', 'CHRIS CODE'];
+    let nameIndex = 0;
+
+    // Set an interval to update the card details every 3 seconds
+    const intervalId = setInterval(() => {
+      nameIndex = (nameIndex + 1) % sampleNames.length;
+      const newNumber = `XXXX XXXX XXXX ${Math.floor(1000 + Math.random() * 9000)}`;
+      
+      setCardDetails({
+        name: sampleNames[nameIndex],
+        number: newNumber,
+      });
+    }, 3000);
+
+    // Cleanup function: this stops the interval when the component is unmounted
+    return () => clearInterval(intervalId);
+  }, []); // Empty dependency array means this effect runs only once on mount
 
   return (
     <HomeContainer>
@@ -117,8 +151,9 @@ export default function Home() {
       <FloatingCard>
         <CardChip />
         <div>
-          <CardNumber>XXXX XXXX XXXX 3737</CardNumber>
-          <CardHolder>JOHN DOE</CardHolder>
+          {/* Use the dynamic state values here */}
+          <CardNumber>{cardDetails.number}</CardNumber>
+          <CardHolder>{cardDetails.name}</CardHolder>
         </div>
       </FloatingCard>
 
@@ -131,6 +166,9 @@ export default function Home() {
           Create Account
         </GreenButton>
       </ButtonContainer>
+
+      {/* Your name added here */}
+      <FooterText><b>Made by Naman Sharma</b></FooterText>
     </HomeContainer>
   );
 }

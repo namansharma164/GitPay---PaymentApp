@@ -10,6 +10,8 @@ const DashboardPage = styled.div`
   background: #0d0d0d;
   color: #fff;
   font-family: 'Poppins', sans-serif;
+  display: flex; /* Added for footer positioning */
+  flex-direction: column; /* Added for footer positioning */
 `;
 
 const Header = styled.header`
@@ -156,6 +158,7 @@ const DeclineButton = styled(ActionButton)`
 
 const MainContent = styled.main`
   padding: 40px;
+  flex-grow: 1; /* Added for footer positioning */
 `;
 
 const MessageContainer = styled.div`
@@ -172,6 +175,27 @@ const WelcomeHeader = styled.h2`
   margin-bottom: 20px;
   span {
     color: #32cd32;
+  }
+`;
+
+const DashboardMessage = styled.div`
+  background: linear-gradient(135deg, #1a1a1a, #222);
+  border-left: 4px solid #32cd32;
+  padding: 25px;
+  border-radius: 10px;
+  margin-bottom: 40px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+
+  h3 {
+    margin-top: 0;
+    color: #fff;
+    font-weight: 600;
+  }
+
+  p {
+    margin-bottom: 0;
+    color: #ccc;
+    line-height: 1.6;
   }
 `;
 
@@ -279,6 +303,16 @@ const TransactionAmount = styled.p`
   font-weight: bold;
   color: ${props => (props.type === 'credit' ? '#39d353' : '#ff4d4d')};
 `;
+
+const Footer = styled.footer`
+  text-align: center;
+  padding: 20px 40px;
+  font-size: 1.3rem;
+  color: #555;
+  border-top: 1px solid #222;
+  margin-top: auto; /* Pushes footer to the bottom */
+`;
+
 
 export default function Dashboard({ setToken }) {
   const [userData, setUserData] = useState(null);
@@ -389,6 +423,12 @@ export default function Dashboard({ setToken }) {
       </Header>
       <MainContent>
         <WelcomeHeader>Welcome back, <span>{userData?.firstName}</span>!</WelcomeHeader>
+        
+        <DashboardMessage>
+            <h3>Your Financial Command Center</h3>
+            <p>This is your central hub for managing funds, viewing recent activity, and handling payment requests. We're glad to have you!</p>
+        </DashboardMessage>
+
         <CardsContainer>
           <BalanceCard>
             <h3>Current Balance</h3>
@@ -408,13 +448,13 @@ export default function Dashboard({ setToken }) {
           {transactions.length > 0 ? (
             <TransactionList>
               {transactions.map(tx => (
-                <TransactionItem key={tx.id}>
+                <TransactionItem key={tx._id}>
                   <TransactionDetails>
                     <p>{tx.description}</p>
-                    <span>{tx.date}</span>
+                    <span>{new Date(tx.date).toLocaleString()}</span>
                   </TransactionDetails>
-                  <TransactionAmount type={tx.type}>
-                    {tx.type === 'credit' ? '+' : '-'}{formatCurrency(Math.abs(tx.amount))}
+                  <TransactionAmount type={tx.amount > 0 ? 'credit' : 'debit'}>
+                    {tx.amount > 0 ? '+' : '-'}{formatCurrency(Math.abs(tx.amount))}
                   </TransactionAmount>
                 </TransactionItem>
               ))}
@@ -424,6 +464,11 @@ export default function Dashboard({ setToken }) {
           )}
         </TransactionsSection>
       </MainContent>
+
+      
+      <Footer>
+        Made by Naman Sharma
+      </Footer>
     </DashboardPage>
   );
 }
