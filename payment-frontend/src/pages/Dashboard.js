@@ -426,8 +426,8 @@ export default function Dashboard({ setToken }) {
                   </TransactionDetails>
                   {/* --- Reverted to your original UI logic --- */}
                   <TransactionAmount type={tx.type}>
-                    {tx.amount > 0 ? '+' : ''}{formatCurrency(tx.amount)}
-                  </TransactionAmount>
+  {tx.type === 'credit' ? '-' : '+'}{formatCurrency(Math.abs(tx.amount))}
+</TransactionAmount>
                 </TransactionItem>
               ))}
             </TransactionList>
