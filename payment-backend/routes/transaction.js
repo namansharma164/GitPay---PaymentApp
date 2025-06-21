@@ -167,9 +167,7 @@ router.get('/recent', authMiddleware, async (req, res) => {
         return {
           id: tx._id,
           description: description,
-          date: tx.timestamp.toISOString().split('T')[0],
-          // --- THIS IS THE CORRECTED LOGIC ---
-          // If you are the sender, the amount should be negative.
+          date: tx.timestamp,
           amount: isSender ? -tx.amount : tx.amount,
           type: isSender ? 'credit' : 'debit',
           status: tx.status,

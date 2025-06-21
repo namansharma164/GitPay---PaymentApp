@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { FaPaperPlane, FaPlusCircle, FaSignOutAlt, FaReceipt, FaBell } from 'react-icons/fa';
 
-// ... (All other styled-components remain exactly the same) ...
 
 const DashboardPage = styled.div`
   min-height: 100vh;
